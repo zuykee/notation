@@ -1,6 +1,6 @@
 .layout {
     width:100%;
-    background-image: url('/assets/img/keyboard.jpg');
+    background-image: url('assets/img/keyboard.jpg');
     background-size: contain;
     background-repeat: no-repeat;
     position: relative;
