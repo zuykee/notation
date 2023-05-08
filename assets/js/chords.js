@@ -1,6 +1,6 @@
 let tones = ['C','C#', 'D','D#', 'E','F','F#', 'G','G#', 'A','A#', 'B' ];
 let sizeNames = [ 'M', 'm', 'aug', 'dim', 'sus4', 'sus2', '7', 'M7','m7', 'm7b5', 'dim7', '9', 'M9', 'm9', '11', 'M11', 'm11', '13', 'M13', 'm13' ]
-
+let $keys = [];
 let operatingTones = [];
 let sizes = {
     'M': [4,3],
@@ -25,95 +25,47 @@ let sizes = {
   'm13': [3, 4, 3, 4, 3, 4]
 };
 
-// let sizes = {
-//     1: {
-//       name: 'M',
-//       intervals: [4, 3]
-//     },
-//     2: {
-//       name: 'm',
-//       intervals: [3, 4]
-//     },
-//     3: {
-//       name: 'aug',
-//       intervals: [4, 4]
-//     },
-//     4: {
-//       name: 'dim',
-//       intervals: [3, 3]
-//     },
-//     5: {
-//       name: 'sus4',
-//       intervals: [5, 2]
-//     },
-//     6: {
-//       name: 'sus2',
-//       intervals: [2, 5]
-//     },
-//     7: {
-//       name: '7',
-//       intervals: [4, 3, 3]
-//     },
-//     8: {
-//       name: 'M7',
-//       intervals: [4, 3, 4]
-//     },
-//     9: {
-//       name: 'm7',
-//       intervals: [3, 4, 3]
-//     },
-//     10: {
-//       name: 'm7b5',
-//       intervals: [3, 3, 4]
-//     },
-//     11: {
-//       name: 'dim7',
-//       intervals: [3, 3, 3]
-//     },
-//     12: {
-//       name: '9',
-//       intervals: [4, 3, 3, 4]
-//     },
-//     13: {
-//       name: 'M9',
-//       intervals: [4, 3, 4, 3]
-//     },
-//     14: {
-//       name: 'm9',
-//       intervals: [3, 4, 3, 4]
-//     },
-//     15: {
-//       name: '11',
-//       intervals: [4, 3, 3, 4, 3]
-//     },
-//     16: {
-//       name: 'M11',
-//       intervals: [4, 3, 4, 3, 4]
-//     },
-//     17: {
-//       name: 'm11',
-//       intervals: [3, 4, 3, 4, 3]
-//     },
-//     18: {
-//       name: '13',
-//       intervals: [4, 3, 3, 4, 3, 4]
-//     },
-//     19: {
-//       name: 'M13',
-//       intervals: [4, 3, 4, 3, 4, 3]
-//     },
-//     20: {
-//       name: 'm13',
-//       intervals: [3, 4, 3, 4, 3, 4]
-//     }
-//   };
-
-console.log(Array.from(Object.entries(sizes)));
-
-
 let $tonesList = document.querySelector('.tone-select');
 let $sizesList = document.querySelector('.size-select')
-let $keys = document.querySelectorAll('.key');
+
+let $keyboard = document.querySelector('.layout');
+
+// initial function 
+let init = () => {
+    for (let i = 1; i <= 3; i++) {
+        for (let j = 0; j < 12; j++) {
+            if (tones[j].includes('#')) {
+              let  key = createKey('black', tones[j], i)
+                
+                let emptySpace = document.createElement('div')
+                emptySpace.className = 'empty-space'
+                emptySpace.appendChild(key)
+                $keyboard.appendChild(emptySpace)
+            } else {
+
+            let key = createKey('white', tones[j], i)
+            
+            $keyboard.appendChild(key);
+            }
+           
+
+        }
+    }
+  
+}
+
+
+
+// Create key
+let createKey = (type, note, octave) => {
+    let key = document.createElement('button')
+    key.className = `key piano__key--${type}`
+    key.dataset.key = note;
+    key.dataset.octave = octave;
+    $keys.push(key)
+    return key;
+
+}
 
 //создаем список тоник
 
@@ -152,26 +104,37 @@ function getSizes(sizeStr) {
 
 //создаем маркер для обозначения используемых клавиш
 
-function createMarker() {
+function createMarker(chosenKey) {
     let marker = document.createElement('div');
     marker.classList.add('chosen');
+    console.log(chosenKey);
+    marker.textContent = chosenKey.dataset.key;
     return marker;
 }
 
-// при выборе тоники программа показывает ее на клавиатуре
+//очищаем экран от устаревших маркеров
 
-function showTonic() {
+function cleanField(){
     let oldMarkers = document.querySelectorAll('.chosen');
 
     oldMarkers.forEach((marker) => {
         marker.remove();
     });
-   if ($tonesList.value !== '-') {
+}
+
+// при выборе тоники программа показывает ее на клавиатуре
+
+function showTonic() {
     let tonic = Array.from($keys).find(key => key.dataset.key == $tonesList.value);
-    tonic.append(createMarker());
-    return tonic;
-   }
+    cleanField();
+   if ($tonesList.value !== '-' && $sizesList.value == '-') { 
+    tonic.append(createMarker(tonic));
     
+   } else if ($tonesList.value !== '-' && $sizesList.value !== '-') {
+    showChord();
+   }
+
+   return tonic;
 }
 
 //сдвигаем ступени при выборе тоники
@@ -195,26 +158,31 @@ function moveTones(arr, chosenTonic) {
   //Строим аккорд от тоники
 
   function showChord() {
-    let oldMarkers = document.querySelectorAll('.chosen');
-
-    oldMarkers.forEach((marker) => {
-        marker.remove();
-    });
-    if ($sizesList.value !== '-' && $tonesList.value !== '-') {
-        let interval = sizes[$sizesList.value];
-        console.log(interval,interval.length);
-        let markedKey;
+    let interval = sizes[$sizesList.value];
+   
         let nextNote=0;
+        let operatingKeys =  Array.from($keys);
+        let  markedKey = operatingKeys.find(key => key.dataset.key == $tonesList.value);
+    cleanField();
+    if ($sizesList.value !== '-' && $tonesList.value !== '-') {
         
+        console.log(markedKey);
         for(let i=0;i<interval.length+1;i++) {
-            markedKey = Array.from($keys).find(key => key.dataset.key == operatingTones[nextNote]);
-
-            console.log(tones[0+i],markedKey);
-            markedKey.append(createMarker());
+            markedKey.append(createMarker(markedKey));
+            operatingKeys = operatingKeys.slice(operatingKeys.indexOf(markedKey));
+            console.log(operatingKeys);
+            markedKey = operatingKeys[0+interval[i]];
+           console.log(markedKey);
+            
             nextNote = nextNote + Number(interval[i]);
+            
+            
         }
-        return markedKey;
+    }   else {
+        showTonic()
     }
+        return markedKey;
+    
 
   }
 
@@ -222,6 +190,7 @@ function moveTones(arr, chosenTonic) {
 
 document.addEventListener('DOMContentLoaded', createTonesList(tones));
 document.addEventListener('DOMContentLoaded', createSizesList(sizeNames));
+document.addEventListener('DOMContentLoaded', init());
 $tonesList.addEventListener('change', () => {
     moveTones(tones, $tonesList.value);
     showTonic();
