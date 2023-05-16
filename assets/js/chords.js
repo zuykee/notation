@@ -100,50 +100,50 @@ function showTune() {
 
 //показываем аккорды на грифе
 
-// function findChordShapes(chord, tuning) {
-//     let shapes = [];
-//     let futureShape = ['x','x','x','x','x','x'];
-//     for(let j = 0;j<6;j++) {
-//         for (let i = 0;i<tuning.length;i++) {
-//             console.log(futureShape);
-//             chord.forEach((tone) => {
-                
-//                 if((tuning[i]+j)% tones.length == tone && futureShape[i] == 'x') {
-//                     console.log(tone);
-//                     console.log((tuning[i]+j))
-//                     console.log((tuning[i]+j)% tones.length)
-//                     futureShape[i] = j;
-//                     console.log(futureShape);
-//                 }
-//             })
-//         }
-        
-        
-        
-//     }
-//     return futureShape;
-//   }
-
 function findChordShapes(chord, tuning) {
     let shapes = [];
-    let futureShape = ['x', 'x', 'x', 'x', 'x', 'x'];
-    
-    for (let j = 0; j < 6; j++) {
-      let currentShape = futureShape.slice(); // Создаем копию текущей аппликатуры
-      
-      for (let i = 0; i < tuning.length; i++) {
-        chord.forEach((tone) => {
-          if ((tuning[i] + j) % tones.length === tone && currentShape[i] === 'x') {
-            currentShape[i] = j;
-          }
-        });
-      }
-      
-      shapes.push(currentShape); // Добавляем текущую аппликатуру в массив shapes
+    let futureShape = ['x','x','x','x','x','x'];
+    for(let j = 0;j<6;j++) {
+        for (let i = 0;i<tuning.length;i++) {
+            console.log(futureShape);
+            chord.forEach((tone) => {
+                
+                if((tuning[i]+j)% tones.length == tone && futureShape[i] == 'x') {
+                    console.log(tone);
+                    console.log((tuning[i]+j))
+                    console.log((tuning[i]+j)% tones.length)
+                    futureShape[i] = j;
+                    console.log(futureShape);
+                }
+            })
+        }
+        
+        
+        
     }
-    
-    return shapes;
+    return futureShape;
   }
+
+// function findChordShapes(chord, tuning) {
+//     let shapes = [];
+//     let futureShape = ['x', 'x', 'x', 'x', 'x', 'x'];
+    
+//     for (let j = 0; j < 6; j++) {
+//       let currentShape = futureShape.slice(); // Создаем копию текущей аппликатуры
+      
+//       for (let i = 0; i < tuning.length; i++) {
+//         chord.forEach((tone) => {
+//           if ((tuning[i] + j) % tones.length === tone && currentShape[i] === 'x') {
+//             currentShape[i] = j;
+//           }
+//         });
+//       }
+      
+//       shapes.push(currentShape); // Добавляем текущую аппликатуру в массив shapes
+//     }
+    
+//     return shapes;
+//   }
   
   
   // Пример использования
