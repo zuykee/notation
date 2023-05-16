@@ -25,10 +25,12 @@ let sizes = {
   'm13': [3, 4, 3, 4, 3, 4]
 };
 
+const standartTune = [4, 11, 7, 2, 9, 4];
+
 let $tonesList = document.querySelector('.tone-select');
 let $sizesList = document.querySelector('.size-select')
-
 let $keyboard = document.querySelector('.layout');
+let $capoList = document.querySelector('.capo');
 
 // initial function 
 let init = () => {
@@ -53,6 +55,103 @@ let init = () => {
     }
   
 }
+
+//список позиций каподастра
+function createCapoList() {
+    
+    for (let i=1;i<20;i++) {
+        $capoList.append(capoFret(i));
+    }
+    return $capoList;
+}
+
+function capoFret(fret) {
+    let fretNumber = document.createElement('option');
+    fretNumber.value = fret;
+    fretNumber.innerHTML = fret;
+    return fretNumber;
+}
+
+//выводим сведения о текущем строе 
+
+function showStringTune(tune) {
+    let stringTone = document.createElement('span');
+    
+    stringTone.className = "chosen";
+    stringTone.innerHTML = tones[tune];
+    return stringTone;
+
+}
+
+function showTune() {
+    let $tuneDisplay = document.querySelector('.tune-display');
+    $tuneDisplay.innerHTML = '';
+    let operatingTune = [];
+
+   
+
+    for(let i = 0; i < standartTune.length; i++) {
+        operatingTune = [...standartTune];
+        let toneIndex = (operatingTune[i] + Number($capoList.value)) % tones.length;
+        $tuneDisplay.append(showStringTune(toneIndex));
+        
+    }
+}
+
+//показываем аккорды на грифе
+
+// function findChordShapes(chord, tuning) {
+//     let shapes = [];
+//     let futureShape = ['x','x','x','x','x','x'];
+//     for(let j = 0;j<6;j++) {
+//         for (let i = 0;i<tuning.length;i++) {
+//             console.log(futureShape);
+//             chord.forEach((tone) => {
+                
+//                 if((tuning[i]+j)% tones.length == tone && futureShape[i] == 'x') {
+//                     console.log(tone);
+//                     console.log((tuning[i]+j))
+//                     console.log((tuning[i]+j)% tones.length)
+//                     futureShape[i] = j;
+//                     console.log(futureShape);
+//                 }
+//             })
+//         }
+        
+        
+        
+//     }
+//     return futureShape;
+//   }
+
+function findChordShapes(chord, tuning) {
+    let shapes = [];
+    let futureShape = ['x', 'x', 'x', 'x', 'x', 'x'];
+    
+    for (let j = 0; j < 6; j++) {
+      let currentShape = futureShape.slice(); // Создаем копию текущей аппликатуры
+      
+      for (let i = 0; i < tuning.length; i++) {
+        chord.forEach((tone) => {
+          if ((tuning[i] + j) % tones.length === tone && currentShape[i] === 'x') {
+            currentShape[i] = j;
+          }
+        });
+      }
+      
+      shapes.push(currentShape); // Добавляем текущую аппликатуру в массив shapes
+    }
+    
+    return shapes;
+  }
+  
+  
+  // Пример использования
+  const AmChord = [9, 0, 4];
+  const standardTuning = [4, 11, 7, 2, 9, 4];
+  const AmChordShapes = findChordShapes(AmChord, standardTuning);
+  console.log(AmChordShapes);
+
 
 
 
@@ -174,20 +273,57 @@ function moveTones(arr, chosenTonic) {
             markedKey = operatingKeys[0+interval[i]];
            console.log(markedKey);
             
-            nextNote = nextNote + Number(interval[i]);
-            
-            
+            nextNote = nextNote + Number(interval[i]);            
         }
     }   else {
         showTonic()
     }
         return markedKey;
-    
-
   }
 
+  //создаем запись аппликатуры аккордов
+
+//   function generateChordShapes(rootNote, chordType) {
+//     // Определяем тонику аккорда
+//     let rootIndex = tones.indexOf(rootNote);
+//     if (rootIndex === -1) {
+//       throw new Error("Invalid root note!");
+//     }
+  
+//     // Получаем интервалы аккорда из объекта sizes
+//     let chordIntervals = sizes[chordType];
+//     if (!chordIntervals) {
+//       throw new Error("Invalid chord type!");
+//     }
+  
+//     // Генерируем аппликатуры
 
 
+//     let chordShapes = [];
+//     for (let i = 0; i < 12; i++) {
+//       let chordShape = [];
+//       for (let j = 0; j < chordIntervals.length; j++) {
+//         let noteIndex = (rootIndex + chordIntervals[j]) % 12;
+//         chordShape.push(tones[noteIndex]);
+//       }
+//       chordShapes.push(chordShape);
+//     }
+  
+//     // Возвращаем список аппликатур
+//     console.log (chordShapes);
+//     return chordShapes;
+//   }
+
+//   function sum(arr) {
+//     return arr.reduce((acc, val) => acc + val, 0);
+//   }
+
+  
+
+
+
+ document.addEventListener('DOMContentLoaded', createCapoList());
+ document.addEventListener('DOMContentLoaded', showTune());
 document.addEventListener('DOMContentLoaded', createTonesList(tones));
 document.addEventListener('DOMContentLoaded', createSizesList(sizeNames));
 document.addEventListener('DOMContentLoaded', init());
@@ -199,5 +335,10 @@ $tonesList.addEventListener('change', () => {
 $sizesList.addEventListener('change', () => {
     showChord();
 })
+$capoList.addEventListener('change', () => {
+    showTune();
+})
+
+
 
 
