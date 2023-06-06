@@ -2,6 +2,7 @@ let tones = ['C','C#', 'D','D#', 'E','F','F#', 'G','G#', 'A','A#', 'B' ];
 let sizeNames = [ 'M', 'm', 'aug', 'dim', 'sus4', 'sus2', '7', 'M7','m7', 'm7b5', 'dim7', '9', 'M9', 'm9', '11', 'M11', 'm11', '13', 'M13', 'm13' ]
 let $keys = [];
 let operatingTones = [];
+
 let sizes = {
     'M': [4,3],
     'm': [3,4],
@@ -98,62 +99,167 @@ function showTune() {
     }
 }
 
-//показываем аккорды на грифе
+//формируем аккорды для отрисовки
 
-function findChordShapes(chord, tuning) {
-    let shapes = [];
-    let futureShape = ['x','x','x','x','x','x'];
-    for(let j = 0;j<6;j++) {
-        for (let i = 0;i<tuning.length;i++) {
-            console.log(futureShape);
-            chord.forEach((tone) => {
-                
-                if((tuning[i]+j)% tones.length == tone && futureShape[i] == 'x') {
-                    console.log(tone);
-                    console.log((tuning[i]+j))
-                    console.log((tuning[i]+j)% tones.length)
-                    futureShape[i] = j;
-                    console.log(futureShape);
-                }
-            })
-        }
-        
+function findChordShapes(chordScheme, tonic, firstFret, fretsRange, currentTuning) {
+    let shape = [];
+    const chordNotes = getChordNotes(chordScheme, tonic);
+   let chordMatrix = [];
+   function isFullChord(fingering, tuning, notes) {
+    let tonesInChord = []
+
+    for (let i=0;i<tuning.length;i++) {
+        let fretSymbol = (fingering[i] !== 'x') ? (fingering[i]+tuning[i])%12 : 'x';
+        tonesInChord.push(fretSymbol);
         
         
     }
-    return futureShape;
+
+    function isSubset(array, subset) {
+        return subset.every(item => array.includes(item));
+      }
+      if(isSubset(tonesInChord,notes)) {
+        return true;
+      }
+} 
+   
+    
+    for(let i = firstFret;i<fretsRange;i++) {
+        let fret = [];
+        for(let j = 0;j<currentTuning.length;j++) {
+        if(chordNotes.includes(currentTuning[j])) {
+                    fret[j] = 0;
+                       } else 
+                if(chordNotes.includes((currentTuning[j]+i)% 12)) {
+                fret[j] = i;
+                     }   
+                else {
+                        fret[j] = 'x';
+                }
+                }
+        chordMatrix.push(fret);
+        
+       
+    }
+        
+    for (let i = 0;i<chordMatrix.length;i++) {
+        console.log(chordMatrix)
+        if (shape.length<chordMatrix[i].length && i==0) {
+            shape = chordMatrix[i];
+           console.log(shape)
+                } else
+       if  ((!isFullChord(shape,currentTuning,chordNotes) && i<4) || (isFullChord(shape,currentTuning,chordNotes) && i<4)) {
+        
+        for (let j=0;j<6;j++) {
+         
+            if (typeof(shape[j]) !== 'number') {
+                console.log(chordMatrix[i]);
+                shape[j] = chordMatrix[i][j];
+                console.log(shape);
+                drawChord(shape)
+            } else {
+                console.log(shape);
+                drawChord(shape);
+            }
+        } 
+        
+       } else {
+        console.log(shape);
+        console.log(chordNotes);
+        drawChord(shape);
+    };
+    }
+
+    
+
+    // const getSuitableFrets = (chordNotes, stringTune) =>
+    //   chordNotes
+    //     .map((note) => (12 + note - stringTune) % 12)
+    //     .filter((fret) => fret >= firstFret || fret == 0)
+    //     .sort((a, b) => a - b);
+  
+    // const allSuitableFrets = tuning.map((stringTune) =>
+    //   getSuitableFrets(chordNotes, stringTune)
+    // );
+  
+    // const generateCombinations = (shape, stringIndex) => {
+    //   if (stringIndex < 0) {
+    //     shapes.push(shape.slice());
+    //     return;
+    //   }
+  
+    //   const frets = allSuitableFrets[stringIndex];
+    //   for (let fret of frets) {
+    //     if (fret > fretsRange) {
+    //       break;
+    //     }
+  
+    //     const newShape = shape.slice();
+    //     newShape[stringIndex] = fret;
+  
+    //     const isValidShape = validateShape(newShape);
+    //     if (isValidShape) {
+    //       generateCombinations(newShape, stringIndex - 1);
+    //     }
+    //   }
+    // };
+  
+    // const validateShape = (shape) => {
+    //     console.log(shape);
+    //   const openStrings = tuning.map(() => 'x');
+    //   const frettedStrings = shape.map((fret) => (fret !== 0 ? fret : 'x'));
+    //   const combinedStrings = openStrings.concat(frettedStrings).slice(-tuning.length);
+    //   const hasRequiredNotes = chordNotes.every((note) =>
+    //   combinedStrings.includes((12 + note - tonic) % 12)
+    // );
+    //   for (let i = tuning.length; i > 0; --i) {
+    //     const stringNote = (12 + tuning[i] - tonic) % 12;
+    //     const isStringInChord = chordNotes.includes(stringNote);
+  
+    //     if (!isStringInChord){
+    //     //   if (combinedStrings[i] !== 'x') {
+    //     //     return false;
+    //     //   }
+  
+    //     //   if (i === tuning.length - 1 && combinedStrings.slice(-2).filter((fret) => fret !== 'x').length >= 2) {
+    //     //     return false;
+    //     //   }
+    //     tuning[i] = 'x';
+        
+        
+    //     return true;
+    //     } else {
+         
+    //       if (hasRequiredNotes) {
+    //        console.log('[eq')
+    //       }
+    //     }
+    //   }
+  
+    // //   return true;
+    // };
+  
+    // generateCombinations(new Array(tuning.length).fill('x'), tuning.length - 1);
+    // console.log(shapes);
+    // return shapes;
   }
 
-// function findChordShapes(chord, tuning) {
-//     let shapes = [];
-//     let futureShape = ['x', 'x', 'x', 'x', 'x', 'x'];
-    
-//     for (let j = 0; j < 6; j++) {
-//       let currentShape = futureShape.slice(); // Создаем копию текущей аппликатуры
-      
-//       for (let i = 0; i < tuning.length; i++) {
-//         chord.forEach((tone) => {
-//           if ((tuning[i] + j) % tones.length === tone && currentShape[i] === 'x') {
-//             currentShape[i] = j;
-//           }
-//         });
-//       }
-      
-//       shapes.push(currentShape); // Добавляем текущую аппликатуру в массив shapes
-//     }
-    
-//     return shapes;
-//   }
+  // отбираем в отдельный массив номера тонов
+
+  function getChordNotes(chordScheme, tonic) {
+    const notesArray = [ tonic ];
+    let distanceFromTonic = 0;
   
-  
-  // Пример использования
-  const AmChord = [9, 0, 4];
-  const standardTuning = [4, 11, 7, 2, 9, 4];
-  const AmChordShapes = findChordShapes(AmChord, standardTuning);
-  console.log(AmChordShapes);
-
-
-
+    for (interval of chordScheme) {
+        console.log(distanceFromTonic, interval);
+      distanceFromTonic += interval;
+      let note = (tonic + distanceFromTonic) % 12;
+      notesArray.push(note);
+    }
+    // drawChord([9,0,4]);
+     console.log(notesArray);
+    return notesArray;
+  }
 
 // Create key
 let createKey = (type, note, octave) => {
@@ -281,45 +387,57 @@ function moveTones(arr, chosenTonic) {
         return markedKey;
   }
 
-  //создаем запись аппликатуры аккордов
+ //отрисовываем аккорд на грифе
 
-//   function generateChordShapes(rootNote, chordType) {
-//     // Определяем тонику аккорда
-//     let rootIndex = tones.indexOf(rootNote);
-//     if (rootIndex === -1) {
-//       throw new Error("Invalid root note!");
-//     }
+function drawChord(chordArray) {
+    // console.log(chordArray);
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
   
-//     // Получаем интервалы аккорда из объекта sizes
-//     let chordIntervals = sizes[chordType];
-//     if (!chordIntervals) {
-//       throw new Error("Invalid chord type!");
-//     }
+    // Определите параметры для отрисовки аккорда
+    const stringSpacing = 20; // Промежуток между струнами
+    const fretSpacing = 40; // Промежуток между ладами
+    const fretColor = '#000000'; // Цвет порожков
+    const stringColor = '#000000'; // Цвет струн
+    const fingerColor = '#ff0000'; // Цвет пальцев
+    const fingerRadius = 6; // Радиус пальцев
   
-//     // Генерируем аппликатуры
-
-
-//     let chordShapes = [];
-//     for (let i = 0; i < 12; i++) {
-//       let chordShape = [];
-//       for (let j = 0; j < chordIntervals.length; j++) {
-//         let noteIndex = (rootIndex + chordIntervals[j]) % 12;
-//         chordShape.push(tones[noteIndex]);
-//       }
-//       chordShapes.push(chordShape);
-//     }
+    // Очистите холст перед отрисовкой аккорда
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-//     // Возвращаем список аппликатур
-//     console.log (chordShapes);
-//     return chordShapes;
-//   }
-
-//   function sum(arr) {
-//     return arr.reduce((acc, val) => acc + val, 0);
-//   }
-
+    // Отрисуйте порожки между ладами
+    for (let fret = 1; fret < chordArray.length; fret++) {
+      const x = canvas.width - fret * fretSpacing;
+      ctx.fillStyle = fretColor;
+      ctx.fillRect(x, 0, 1, stringSpacing*6);
+    }
   
+    // Отрисуйте струны
+    for (let string = 0; string < chordArray.length; string++) {
+      const y = (string + 0.5) * stringSpacing;
+      ctx.fillStyle = stringColor;
+      ctx.fillRect(100, y, fretSpacing*4, 1);
+    }
+  
+    // Отрисуйте зажатые струны
+    for (let string = 0; string < chordArray.length; string++) {
+      const y = (string + 0.5) * stringSpacing;
+      if (chordArray[string] !== 'x' && chordArray[string]>0) {
+        const x = canvas.width - (chordArray[string] + 0.5) * fretSpacing;
+        ctx.fillStyle = fingerColor;
+        ctx.beginPath();
+        ctx.arc(x, y, fingerRadius, 0, 2 * Math.PI);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = fingerColor;
+        ctx.beginPath();
+        ctx.arc(0, y, fingerRadius, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    }
+  }
 
+let aMinor = [0,0,2,2,1,0];
 
 
  document.addEventListener('DOMContentLoaded', createCapoList());
@@ -327,6 +445,7 @@ function moveTones(arr, chosenTonic) {
 document.addEventListener('DOMContentLoaded', createTonesList(tones));
 document.addEventListener('DOMContentLoaded', createSizesList(sizeNames));
 document.addEventListener('DOMContentLoaded', init());
+document.addEventListener('DOMContentLoaded', findChordShapes([3,4], 0, 1, 5, [4, 9, 2, 7, 11, 4]));
 $tonesList.addEventListener('change', () => {
     moveTones(tones, $tonesList.value);
     showTonic();
@@ -334,6 +453,7 @@ $tonesList.addEventListener('change', () => {
 });
 $sizesList.addEventListener('change', () => {
     showChord();
+   getChordNotes(sizes[$sizesList.value],tones.indexOf($tonesList.value));
 })
 $capoList.addEventListener('change', () => {
     showTune();
