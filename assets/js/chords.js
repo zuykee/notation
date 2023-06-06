@@ -155,6 +155,7 @@ function findChordShapes(chordScheme, tonic, firstFret, fretsRange, currentTunin
             if (typeof(shape[j]) !== 'number') {
                 console.log(chordMatrix[i]);
                 shape[j] = chordMatrix[i][j];
+                
                 console.log(shape);
                 drawChord(shape)
             } else {
