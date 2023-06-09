@@ -105,25 +105,57 @@ function findChordShapes(chordScheme, tonic, firstFret, fretsRange, currentTunin
     let shape = [];
     const chordNotes = getChordNotes(chordScheme, tonic);
    let chordMatrix = [];
-   function isFullChord(fingering, tuning, notes) {
-    let tonesInChord = []
+   
 
-    for (let i=0;i<tuning.length;i++) {
-        let fretSymbol = (fingering[i] !== 'x') ? (fingering[i]+tuning[i])%12 : 'x';
-        tonesInChord.push(fretSymbol);
-        
+   //Если в конечной аппликатуре есть все ноты из аккорда, то он проходит проверку
+   function isSubset(array, subset) {
+
+    return subset.every(item => array.includes(item));
+  }
+
+  function findTonesNotInRange() {
+    for (let i = 0; i < shape.length;i++) {
+        if(!chordNotes.includes(shape[i]+currentTuning[i])%12) {
+           
+            return true;
+            
+        }
         
     }
+  }
 
-    function isSubset(array, subset) {
-        return subset.every(item => array.includes(item));
-      }
+   //этой функцией мы проверяем содержатся ли в аппликатуре все звуки аккорда
+   function isFullChord(fingering, tuning, notes) {
+    let tonesInChord = []
+//если до конца fretsRange на струне не взять звук из аккорда, струна не играется
+    for (let i=0;i<tuning.length;i++) {
+        let fretSymbol = (fingering[i] !== 'x') ? (fingering[i]+tuning[i])%12 : 'x';
+        tonesInChord.push(fretSymbol);       
+    }
+        console.log(tonesInChord, notes);
+        console.log(isSubset(tonesInChord,notes))
       if(isSubset(tonesInChord,notes)) {
         return true;
       }
 } 
+
+//функция, которая считает количество определенных значений в массиве
+function countPressedStrings(array, value) {
+    let count = 0;
+  
+    for (let i = 0; i < array.length; i++) {
+      if (array[i] === value) {
+        count += 1;
+      }
+    }
+  
+    return count;
+  }
    
-    
+   //проходим каждый лад по струнам. 
+   //Если зажатая на этом ладу струна соответствует звуку в аккорде, струне в массиве присваивается номер лада.
+   //Если нет - ставится крестик
+   //Масивов формируется по количеству fretsRange. 
     for(let i = firstFret;i<fretsRange;i++) {
         let fret = [];
         for(let j = 0;j<currentTuning.length;j++) {
@@ -137,6 +169,7 @@ function findChordShapes(chordScheme, tonic, firstFret, fretsRange, currentTunin
                         fret[j] = 'x';
                 }
                 }
+                // console.log(fret)
         chordMatrix.push(fret);
         
        
@@ -144,32 +177,49 @@ function findChordShapes(chordScheme, tonic, firstFret, fretsRange, currentTunin
         
     for (let i = 0;i<chordMatrix.length;i++) {
         console.log(chordMatrix)
-        if (shape.length<chordMatrix[i].length && i==0) {
+        if (shape.length<chordMatrix[i].length && countPressedStrings(chordMatrix[i], 1)>2 && i==0) {
+            shape = [1,1,1,1,1,1];
+            console.log(isFullChord(shape,currentTuning,chordNotes))
+        }else if (shape.length<chordMatrix[i].length && i==0) {
             shape = chordMatrix[i];
-           console.log(shape)
-                } else
-       if  ((!isFullChord(shape,currentTuning,chordNotes) && i<4) || (isFullChord(shape,currentTuning,chordNotes) && i<4)) {
-        
+            
+        } 
+           
+       if  ( i>0 && (!isFullChord(shape,currentTuning,chordNotes))  || (isFullChord(shape,currentTuning,chordNotes) && countPressedStrings(shape, 'x') >1) || (isFullChord(shape,currentTuning,chordNotes) && findTonesNotInRange())) {
+        console.log('i am here');
         for (let j=0;j<6;j++) {
-         
-            if (typeof(shape[j]) !== 'number') {
-                console.log(chordMatrix[i]);
+         console.log(shape[j]);
+            if (typeof(shape[j]) !== 'number' || (!chordNotes.includes((currentTuning[j]+shape[j])% 12))) {
+                console.log(currentTuning[j] + ',' + shape[j])
+                // console.log(chordMatrix[i]);
                 shape[j] = chordMatrix[i][j];
                 
                 console.log(shape);
                 drawChord(shape)
             } else {
-                console.log(shape);
+                // console.log(shape);
                 drawChord(shape);
             }
         } 
         
        } else {
         console.log(shape);
-        console.log(chordNotes);
-        drawChord(shape);
+        // console.log(chordNotes);
+        // drawChord(shape);
     };
     }
+
+
+    // Идея следующая: если на первом ладу больше двух единиц, значит все значения на первом ладу равны единице.
+    // Если Аккорд неполный и проверяемая струна на первом ладу не в аккорде, то заменяем ее на то цифровое значение, которое больше.
+    // Если к концу fretsRange струна так и не совпала с тоном в аккорде, ставим крестик.
+    // Дальше проверяем пальцы: если в получившемся аккорде две единицы, и разница между их индексами больше 1, и в аккорде больше одной тройки, тогда:
+    // Получаем массив со значениями звуков при зажатом аккорде;
+    // Если в получившемся массиве два и более одинаковых элементов, то если элемент того же индекса в массиве с аппликатурой равен 3, то значение заменяется 
+    // на крестик либо единицу(при условии, что при зажатом первом ладу получившийся тон есть в аккорде)
+
+
+
 
     
 
@@ -252,13 +302,13 @@ function findChordShapes(chordScheme, tonic, firstFret, fretsRange, currentTunin
     let distanceFromTonic = 0;
   
     for (interval of chordScheme) {
-        console.log(distanceFromTonic, interval);
+     
       distanceFromTonic += interval;
       let note = (tonic + distanceFromTonic) % 12;
       notesArray.push(note);
     }
     // drawChord([9,0,4]);
-     console.log(notesArray);
+    
     return notesArray;
   }
 
@@ -438,15 +488,13 @@ function drawChord(chordArray) {
     }
   }
 
-let aMinor = [0,0,2,2,1,0];
-
 
  document.addEventListener('DOMContentLoaded', createCapoList());
  document.addEventListener('DOMContentLoaded', showTune());
 document.addEventListener('DOMContentLoaded', createTonesList(tones));
 document.addEventListener('DOMContentLoaded', createSizesList(sizeNames));
 document.addEventListener('DOMContentLoaded', init());
-document.addEventListener('DOMContentLoaded', findChordShapes([3,4], 0, 1, 5, [4, 9, 2, 7, 11, 4]));
+document.addEventListener('DOMContentLoaded', findChordShapes([3,4], 10, 1, 5, [4, 9, 2, 7, 11, 4]));
 $tonesList.addEventListener('change', () => {
     moveTones(tones, $tonesList.value);
     showTonic();
